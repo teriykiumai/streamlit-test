@@ -33,8 +33,8 @@ class UserDataBase(ConnectDataBase):
     def __init__(self, db_path):
         super().__init__(db_path)
         # dbのカラムの名
+        self.__name = "name"
         self.__username = "username"
-        self.__userid = "userid"
         self.__password =  "password"
         self.__admin = "admin"
         
@@ -42,11 +42,11 @@ class UserDataBase(ConnectDataBase):
         self.get_table()
 
     @property
+    def name(self):
+        return self.__name  
+    @property
     def username(self):
         return self.__username  
-    @property
-    def userid(self):
-        return self.__userid  
     @property
     def password(self):
         return self.__password  
@@ -59,7 +59,7 @@ class UserDataBase(ConnectDataBase):
         """
         該当テーブルが無ければ作る
         """
-        self._cursor.execute('CREATE TABLE IF NOT EXISTS userstable({} TEXT, {} TEXT unique, {} TEXT, {} INT)'.format(self.username, self.userid, self.password, self.admin))
+        self._cursor.execute('CREATE TABLE IF NOT EXISTS userstable({} TEXT, {} TEXT unique, {} TEXT, {} INT)'.format(self.name, self.username, self.password, self.admin))
 
     def _hashing_password(self, plain_password):
         """
@@ -67,38 +67,38 @@ class UserDataBase(ConnectDataBase):
         """
         return bcrypt.hashpw(plain_password.encode(), bcrypt.gensalt()).decode()
 
-    def __chk_userid_existence(self, userid):
+    def __chk_username_existence(self, username):
         """
         ユニークユーザのバリデーション
         """
-        self._cursor.execute('select {} from userstable'.format(self.userid))
+        self._cursor.execute('select {} from userstable'.format(self.username))
         exists_users = [_[0] for _ in self._cursor]
-        if userid in exists_users:
+        if username in exists_users:
             return True
         
-    def add_user(self, username, userid, password, admin):
+    def add_user(self, name, username, password, admin):
         """
         新しくユーザを追加します
             [args]
-                [0] username: str
-                [1] userid : str (unique only)
+                [0] name: str
+                [1] username : str (unique only)
                 [2] password : str
                 [3] admin : bool
             [return]
                 res: text (sucsses or field)
         """
         # inputが空かのバリデーション
-        if username=="" or userid=="" or password=="":
+        if name=="" or username=="" or password=="":
             return
         # ユニークユーザのバリデーション
-        if self.__chk_userid_existence(userid):
+        if self.__chk_username_existence(username):
             return 
         # 登録
         hashed_password = self._hashing_password(password)
-        self._cursor.execute('INSERT INTO userstable({}, {}, {}, {}) VALUES (?, ?, ?, ?)'.format(self.username, self.userid, self.password, self.admin),
-                                (username, userid, hashed_password, int(admin)))
+        self._cursor.execute('INSERT INTO userstable({}, {}, {}, {}) VALUES (?, ?, ?, ?)'.format(self.name, self.username, self.password, self.admin),
+                                (name, username, hashed_password, int(admin)))
         self._conn.commit()
-        return f"{username}さんのアカウントを作成しました"
+        return f"{name}さんのアカウントを作成しました"
 
 
 ##### Views #####
@@ -116,8 +116,8 @@ class GeneralUserView:
         認証フォームの表示と認証オブジェクトの表示
         """
         self.authenticator = stauth.Authenticate(
+            model.df[model.name],
             model.df[model.username],
-            model.df[model.userid],
             model.df[model.password],
             'some_cookie_name', 
             'some_signature_key', 
@@ -132,8 +132,8 @@ class AdminUserView:
     def main_form(self, model):
         with st.form(key="create_acount"):
             st.subheader("新規ユーザの作成")
-            self.username = st.text_input("ユーザー名を入力してください", key="create_user")
-            self.userid = st.text_input("ユーザーIDを入力してください", key="create_user")
+            self.name = st.text_input("ニックネームを入力してください", key="create_user")
+            self.username = st.text_input("ユーザー名(ID)を入力してください", key="create_user")
             self.password = st.text_input("パスワードを入力してください",type='password', key="create_pass")
             self.adminauth = st.checkbox("管理者権限の付与")
             self.submit = st.form_submit_button(label='アカウントの作成')
@@ -199,7 +199,7 @@ class LoginController:
         if admin_chk == "admin":
             self.au.main_form(self.model)
             if self.au.submit:
-                res = self.model.add_user(self.au.username, self.au.userid, self.au.password, self.au.adminauth)
+                res = self.model.add_user(self.au.name, self.au.username, self.au.password, self.au.adminauth)
                 if res:
                     self.au.emp.success(res)
                 else:
