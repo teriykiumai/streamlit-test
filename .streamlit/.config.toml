@@ -1,0 +1,33 @@
+#[theme]
+#primaryColor="#ff4646"
+#backgroundColor="#232323"
+#secondaryBackgroundColor="#181818"
+#textColor="#ff7843"
+
+# 青白
+#[theme]
+#primaryColor="#112d4e"
+#backgroundColor="#f9f7f7"
+#secondaryBackgroundColor="#dbe2ef"
+#textColor="#3f72af"
+
+# ミニオン
+#[theme]
+#primaryColor="#acc9bf"
+#backgroundColor="#fed049"
+#secondaryBackgroundColor="#007580"
+#textColor="#282846"
+
+# 黒オレンジ
+[theme]
+primaryColor="#2c82bf"
+backgroundColor="#082032"
+secondaryBackgroundColor="#2c394b"
+textColor="#f96328"
+
+# 青黒
+#[theme]
+#primaryColor="#ff2e63"
+#backgroundColor="#222831"
+#secondaryBackgroundColor="#393e46"
+#textColor="#00adb5"
