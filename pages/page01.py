@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd 
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+# from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import plotly.graph_objects as go
 
 @st.cache(allow_output_mutation=True)

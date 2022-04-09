@@ -7,6 +7,18 @@ import pandas as pd
 import streamlit as st
 import streamlit_authenticator as stauth
 
+"""
+勉強の為に参考にさせて頂いたサイト 
+    steamlit:
+        https://streamlit.io/
+        https://blog.amedama.jp/entry/streamlit-tutorial
+    MVC:
+        https://qiita.com/michimichix521/items/e17db5c744fa877542b6
+    ログイン SQL等:
+        https://github.com/mkhorasani/Streamlit-Authenticator
+        https://zenn.dev/lapisuru/articles/3ae6dd82e36c29a27190
+""" 
+
 ##### Models #####
 class ConnectDataBase:
     """
@@ -62,14 +74,11 @@ class UserDataBase(ConnectDataBase):
         self._cursor.execute('CREATE TABLE IF NOT EXISTS userstable({} TEXT, {} TEXT unique, {} TEXT, {} INT)'.format(self.name, self.username, self.password, self.admin))
 
     def _hashing_password(self, plain_password):
-        """
-        平文をハッシュ化する
-        """
         return bcrypt.hashpw(plain_password.encode(), bcrypt.gensalt()).decode()
 
     def __chk_username_existence(self, username):
         """
-        ユニークユーザのバリデーション
+        ユニークユーザの確認
         """
         self._cursor.execute('select {} from userstable'.format(self.username))
         exists_users = [_[0] for _ in self._cursor]
@@ -85,12 +94,11 @@ class UserDataBase(ConnectDataBase):
                 [2] password : str
                 [3] admin : bool
             [return]
-                res: text (sucsses or field)
+                res: str or None
         """
-        # inputが空かのバリデーション
+
         if name=="" or username=="" or password=="":
             return
-        # ユニークユーザのバリデーション
         if self.__chk_username_existence(username):
             return 
         # 登録
@@ -102,12 +110,15 @@ class UserDataBase(ConnectDataBase):
 
 
 ##### Views #####
+class AlwaysView:
+    def __init__(self):
+        self.main_menu = ["Login", "Admin", "Contact"]
+        self.choice_menu = st.sidebar.selectbox("メニュー", self.main_menu)
+
+
 class GeneralUserView:
     def main_form(self):
-        """
-        アクセスの際、最初に表示する内容
-        """
-        st.header("試作WEBアプリへようこそ！")
+        st.header("音楽理論_勉強用WEBアプリへようこそ！")
         logo = Image.open('./img/login/title_logo2.png')
         st.image(logo, use_column_width=True)
 
@@ -126,9 +137,6 @@ class GeneralUserView:
 
 
 class AdminUserView:
-    def __init__(self):
-        self.admin_login_flag = None
-
     def main_form(self, model):
         with st.form(key="create_acount"):
             st.subheader("新規ユーザの作成")
@@ -153,19 +161,19 @@ class ContactView:
     def _main_form(self):
         st.subheader("💡お問い合わせ先")
         st.write("""
-                |🏢 | test |  
+                |item | マークダウンテスト |  
                 |:--:|:--:|
-                |電話番号(内線)📞 | 0000-00-0000 |   
-                |メール📧 | hoge_test@example.com |  
+                |電話番号📞 | 0000-0000-0000 |   
+                |メール📧 | hoge_test_huge_test@example.com |  
         """)
+        st.latex(r"\dbinom{n}{k} = _{n}C_{k}=\frac{n!}{(n-k)!k!}")
+
 
 ##### Controller #####
 class LoginController:
     def __init__(self, db_path):
-        self._main_menu = ["Login", "Admin", "Contact"]
-        self.choice_menu = st.sidebar.selectbox("メニュー", self._main_menu)
-
         self.model = UserDataBase(db_path)
+        self.av = AlwaysView()
         self.gu = GeneralUserView()
         self.au = AdminUserView()
         self.cv = ContactView()
@@ -173,13 +181,13 @@ class LoginController:
     # 各ページのコントロール
     def _general(self):
         """
-        アカウント認証が成功している場合のみ認証オブジェクトと認証情報をsession_stateに返す
+        アカウント認証が成功している場合st_sessionが更新される
         """
         self.gu.main_form()
         self.gu.side_form(self.model)
         auth = 'authentication_status'
 
-        # アカウント認証に成功したとき, ログアウト用のオブジェクトと認証情報を返す
+        # アカウント認証に成功
         if st.session_state[auth]:
             st.balloons()
             st.success(f"ようこそ {st.session_state['name']} さん")
@@ -190,12 +198,14 @@ class LoginController:
         elif st.session_state[auth] == False:
             st.error("ログイン情報に誤りがあります。再度入力確認してください。")
             st.warning("アカウントをお持ちでない方は管理者に連絡しアカウントを作成してください")
+
         # アカウント認証の情報が何も入力されていないとき
         elif st.session_state[auth] == None:
             st.warning("アカウント情報を入力してログインしてください。")
 
     def _admin(self):
         admin_chk = self.au.side_form()
+        # パスべた書き
         if admin_chk == "admin":
             self.au.main_form(self.model)
             if self.au.submit:
@@ -214,20 +224,17 @@ class LoginController:
         """
         ページの遷移
         """
-        if self.choice_menu == self._main_menu[0]:
+        if self.av.choice_menu == self.av.main_menu[0]:
             self._general()
-        if self.choice_menu == self._main_menu[1]:
+        if self.av.choice_menu == self.av.main_menu[1]:
             self._admin()
-        if self.choice_menu == self._main_menu[2]:
+        if self.av.choice_menu == self.av.main_menu[2]:
             self.cv._main_form()
         
 
 ##### Main #####
 class Login:
     def __init__(self, db_path):
-        """
-        DataBaseのパスを受け取ります
-        """
         self.controller = LoginController(db_path)
         self.controller.page_choice()
 

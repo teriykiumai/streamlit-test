@@ -4,4 +4,4 @@ streamlit:
     - "8501:8501"
   volumes:
     - .:/work
-  tty: True
+  command: main.py

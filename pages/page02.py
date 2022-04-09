@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_ace import st_ace, KEYBINDINGS, LANGUAGES, THEMES
+from streamlit_ace import st_ace, THEMES
 
 import lib
 
