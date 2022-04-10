@@ -1,66 +1,70 @@
-import random
 import numpy as np
 import string
 
-flat_keys = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"]
-sharp_keys =["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-# italy_keys = ["ド", "レ♭", "レ", "ミ♭", "ミ", "ファ", "ソ♭", "ソ", "ラ♭", "ラ", "シ♭", "シ"]
+# 音楽理論の参考サイト https://watanabejunya.com/
+class Diatonic:
+    def __init__(self, target_key="C", scale_type="major"):
+        self._flat_keys = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"]
+        self._sharp_keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+        self._keys = [self._flat_keys, self._sharp_keys]
+        # self.italy_keys = ["ド", "レ♭", "レ", "ミ♭", "ミ", "ファ", "ソ♭", "ソ", "ラ♭", "ラ", "シ♭", "シ"]
+    
+    def _change_pattern(self, keys):
+        target_index = keys.index(self.target_key)
+        # 主Keyを先頭にしてリスト循環させる
+        return np.roll(keys, len(keys)-target_index)
 
-def diatonic_coords(keys, target_key="C"):
-    l = len(keys)
-    key = keys.index(target_key)
-
-    # 第二引数の数で shiht する
-    ch_keys = np.roll(keys, l-key)
-
-    def major_coord():
-        diatonic = [1, 0, 1, 0 , 1, 1, 0, 1, 0, 1, 0, 1]
-        return np.array([True if k==1 else None for k in diatonic], dtype=bool)
-
-    def minor_coord():
-        diatonic = [1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0]
-        return np.array([True if k==1 else None for k in diatonic], dtype=bool)
-
-    def harmonic_minor():
-        diatonic = [1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1]
-        return np.array([True if k==1 else None for k in diatonic], dtype=bool)
-
-    def melodic_minor():
-        diatonic = [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1]
-        return np.array([True if k==1 else None for k in diatonic], dtype=bool)
-
-    sl = major_coord()
-    return ch_keys[major_coord()]
-    # return ch_keys[minor_coord()]
-    # return ch_keys[harmonic_minor()]
-    # return ch_keys[melodic_minor()]
-
-t = "B"
-sharp_key = t
-flat_key = t
-if len(t) != 1:
-    if t[-1] == "#":
-        idx = sharp_keys.index(t)
-        flat_key = flat_keys[idx]
-    elif t[-1] == "♭":
-        idx = flat_keys.index(t)
-        sharp_key = sharp_keys[idx]
+    def _select_scale(self):
+        """
+        numpy filtaに使うbool配列を返す
+        """
+        if self.scale_type == "major":
+            # [全、全、半、全、全、全、半]
+            interval = [1, 0, 1, 0 , 1, 1, 0, 1, 0, 1, 0, 1]
+        elif self.scale_type == "minor":
+            # [全、半、全、全、半、全、全]
+            interval = [1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0]
+        elif self.scale_type == "harmonic_minor":
+            interval = [1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1]
+        elif self.scale_type == "melodic_minor":
+            interval = [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+        else:
+            print("存在しないスケールが指定されています")
+            return 
+            
+        return np.array([True if i==1 else False for i in interval], dtype=bool)
+    
+    def daitonic(self, target_key="C", scale_type="major"):
+        """
+        ダイアトニック構成音のリストを返す
+            args:
+                [0]=key: str
+                [1]=scale_type: str
+            return: -> list
+                [0]=flat_keys [♭]
+                [1]=sharp_keys [#]
+        """
+        self.target_key = target_key
+        self.scale_type = scale_type
         
-s_diatonic = diatonic_coords(sharp_keys, sharp_key)
-f_diatonic = diatonic_coords(flat_keys, flat_key)
-
-print(s_diatonic)
+        changed_keys = [self._change_pattern(k) for k in self._keys]
+        fillter_scale = self._select_scale()
+        self.diatonic_keys = [k[fillter_scale] for k in changed_keys]
+        return self.diatonic_keys
+    
+d = Diatonic()
+f_diatonic, s_diatonic = d.daitonic("E", "harmonic_minor")
 print(f_diatonic)
-print("-"*50)
+print(s_diatonic)
 
 def reform(flat, sharp, mark="#"):
     unique_flat = {k[0] for k in flat}
     unique_sharp = {k[0] for k in sharp}
     if len(unique_flat) == 7:
-        print("No Chage")
+        print("flat")
         return flat
     if len(unique_sharp) == 7:
-        print("No Chage")
+        print("sharp")
         return sharp
     
     

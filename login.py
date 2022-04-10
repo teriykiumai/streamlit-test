@@ -8,7 +8,7 @@ import streamlit as st
 import streamlit_authenticator as stauth
 
 """
-勉強の為に参考にさせて頂いたサイト 
+参考にさせてもらったサイト 
     steamlit:
         https://streamlit.io/
         https://blog.amedama.jp/entry/streamlit-tutorial
@@ -21,22 +21,19 @@ import streamlit_authenticator as stauth
 
 ##### Models #####
 class ConnectDataBase:
-    """
-    データベース基底クラス
-    """
     def __init__(self, db_path):
         self._db_path = db_path
-        self._conn = sqlite3.connect(self._db_path)
-        self._cursor = self._conn.cursor()
+        self.conn = sqlite3.connect(self._db_path)
+        self.cursor = self.conn.cursor()
         self.df = None
 
     def get_table(self, key="*"):
-        self.df = pd.read_sql(f'SELECT {key} FROM userstable', self._conn)
+        self.df = pd.read_sql(f'SELECT {key} FROM userstable', self.conn)
         return self.df
 
     def close(self):
-        self._cursor.close()
-        self._conn.close()
+        self.cursor.close()
+        self.conn.close()
 
     def __del__(self):
         self.close()
@@ -71,7 +68,7 @@ class UserDataBase(ConnectDataBase):
         """
         該当テーブルが無ければ作る
         """
-        self._cursor.execute('CREATE TABLE IF NOT EXISTS userstable({} TEXT, {} TEXT unique, {} TEXT, {} INT)'.format(self.name, self.username, self.password, self.admin))
+        self.cursor.execute('CREATE TABLE IF NOT EXISTS userstable({} TEXT, {} TEXT unique, {} TEXT, {} INT)'.format(self.name, self.username, self.password, self.admin))
 
     def _hashing_password(self, plain_password):
         return bcrypt.hashpw(plain_password.encode(), bcrypt.gensalt()).decode()
@@ -80,8 +77,8 @@ class UserDataBase(ConnectDataBase):
         """
         ユニークユーザの確認
         """
-        self._cursor.execute('select {} from userstable'.format(self.username))
-        exists_users = [_[0] for _ in self._cursor]
+        self.cursor.execute('select {} from userstable'.format(self.username))
+        exists_users = [_[0] for _ in self.cursor]
         if username in exists_users:
             return True
         
@@ -103,9 +100,9 @@ class UserDataBase(ConnectDataBase):
             return 
         # 登録
         hashed_password = self._hashing_password(password)
-        self._cursor.execute('INSERT INTO userstable({}, {}, {}, {}) VALUES (?, ?, ?, ?)'.format(self.name, self.username, self.password, self.admin),
+        self.cursor.execute('INSERT INTO userstable({}, {}, {}, {}) VALUES (?, ?, ?, ?)'.format(self.name, self.username, self.password, self.admin),
                                 (name, username, hashed_password, int(admin)))
-        self._conn.commit()
+        self.conn.commit()
         return f"{name}さんのアカウントを作成しました"
 
 

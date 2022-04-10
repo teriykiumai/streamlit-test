@@ -4,6 +4,7 @@ import streamlit as st
 from streamlit_cropper import st_cropper
 from PIL import Image
 
+# https://openbase.com/python/streamlit-cropper/documentation
 
 def app():
     st.header("Crop a Picture")
