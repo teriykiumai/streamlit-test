@@ -27,8 +27,8 @@ class ConnectDataBase:
         self.cursor = self.conn.cursor()
         self.df = None
 
-    def get_table(self, key="*"):
-        self.df = pd.read_sql(f'SELECT {key} FROM userstable', self.conn)
+    def get_table(self, table="userstable", key="*"):
+        self.df = pd.read_sql(f'SELECT {key} FROM {table}', self.conn)
         return self.df
 
     def close(self):
@@ -41,7 +41,7 @@ class ConnectDataBase:
 class UserDataBase(ConnectDataBase):
     def __init__(self, db_path):
         super().__init__(db_path)
-        # dbのカラムの名
+        # dbのカラム?の名
         self.__name = "name"
         self.__username = "username"
         self.__password =  "password"
@@ -197,7 +197,7 @@ class LoginController:
             st.warning("アカウントをお持ちでない方は管理者に連絡しアカウントを作成してください")
 
         # アカウント認証の情報が何も入力されていないとき
-        elif st.session_state[auth] == None:
+        elif st.session_state[auth] is None:
             st.warning("アカウント情報を入力してログインしてください。")
 
     def _admin(self):

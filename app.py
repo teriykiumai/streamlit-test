@@ -1,14 +1,11 @@
-import time
-
 import streamlit as st
-import pandas as pd
 
-import lib
 import pages
 
 # login 
 def app():
     page_links = {
+        "作成中": pages.musical.view,
         "Deta Editer": pages.page01,
         "Code Editer": pages.page02,
         "Pict Editer": pages.page03,
