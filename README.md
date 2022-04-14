@@ -1,5 +1,3 @@
-# owllwo
-
 # 簡易WEBアプリの構築
 
 ## DEMO
