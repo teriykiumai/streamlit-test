@@ -1,4 +1,4 @@
-# 簡易WEBアプリの構築
+# streamlitで音楽理論勉強
 
 ## DEMO
 ![DEMO](img/demo.gif)
