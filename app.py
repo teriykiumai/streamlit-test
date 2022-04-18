@@ -5,10 +5,10 @@ import pages
 # login 
 def app():
     page_links = {
-        "作成中": pages.musical.view,
-        "Deta Editer": pages.page01,
-        "Code Editer": pages.page02,
-        "Pict Editer": pages.page03,
+        "作成中": pages.music,
+        "Data Editter": pages.page01,
+        "Code Editter": pages.page02,
+        "Pict Editter": pages.page03,
         "Post Profiling": pages.page04,
     }
     # pagesで選択したファイルのapp関数を発火
