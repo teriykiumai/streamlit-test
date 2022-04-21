@@ -29,8 +29,12 @@ def app():
 
 ### TEST CODE ###
 if __name__ == "__main__":  
+    import lib
+    st.set_page_config(page_title='owllwo', page_icon='owl',layout="wide")
+    lib.config.remove_menu_footer()
     if 'authentication_status' not in st.session_state:
         st.session_state['authentication_status'] = None  
+
     app()
 
 
