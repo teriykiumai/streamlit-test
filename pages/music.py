@@ -20,6 +20,7 @@ def role_table(role_item):
     for scale, role in role_item.items():
         with st.expander(scale):
             df = pd.DataFrame(role.values()).T
+            df = df.fillna("")
             df.columns = role.keys()
             st.table(df)
 
